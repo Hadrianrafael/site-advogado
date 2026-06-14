@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: agencia_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-agencia}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-agencia123}
+      POSTGRES_DB: ${POSTGRES_DB:-agencia_db}
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    container_name: agencia_api
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-agencia}:${POSTGRES_PASSWORD:-agencia123}@postgres:5432/${POSTGRES_DB:-agencia_db}
+      JWT_SECRET: ${JWT_SECRET:-change_me_in_production}
+      PORT: 3001
+    ports:
+      - '3001:3001'
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: agencia_frontend
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+    ports:
+      - '3000:3000'
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
