@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ferreira &amp; Associados | Advocacia</title>
+  <meta name="description" content="Escritório de advocacia especializado em direito civil, trabalhista e empresarial. Excelência jurídica com resultados reais." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --cream:#F5F0E8; --gold:#B8953F; --gold2:#D4AF6A;
+      --dark:#0A0C0F; --dark2:#10141A; --dark3:#161C26; --navy:#0D1B2A;
+      --border:rgba(184,149,63,0.2); --text:#E8E4DC; --muted:#6B7685; --glass:rgba(255,255,255,0.03);
+    }
+    html { scroll-behavior:smooth; }
+    body { font-family:'Inter',sans-serif; background:var(--dark); color:var(--text); overflow-x:hidden; cursor:none; }
+
+    .cursor { position:fixed; width:8px; height:8px; background:var(--gold); border-radius:50%; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); transition:transform 0.1s; }
+    .cursor-ring { position:fixed; width:32px; height:32px; border:1px solid var(--gold2); border-radius:50%; pointer-events:none; z-index:9998; transform:translate(-50%,-50%); opacity:.5; }
+
+    #bg-canvas { position:fixed; inset:0; z-index:0; pointer-events:none; }
+
+    /* NAV */
+    nav { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:20px 6%; }
+    nav.scrolled { background:rgba(10,12,15,.92); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); }
+    .nav-logo { text-decoration:none; }
+    .nav-logo-name { display:block; font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; color:var(--cream); letter-spacing:1px; }
+    .nav-logo-sub  { display:block; font-size:.62rem; letter-spacing:3px; text-transform:uppercase; color:var(--gold); }
+    .nav-links { display:flex; gap:2.4rem; list-style:none; }
+    .nav-links a { color:var(--muted); font-size:.82rem; letter-spacing:1px; text-transform:uppercase; text-decoration:none; transition:color .2s; }
+    .nav-links a:hover { color:var(--gold2); }
+    .nav-cta { padding:10px 24px; background:transparent; border:1px solid var(--gold); color:var(--gold); font-size:.78rem; letter-spacing:2px; text-transform:uppercase; text-decoration:none; cursor:none; transition:all .25s; }
+    .nav-cta:hover { background:var(--gold); color:var(--dark); }
+
+    /* HERO */
+    #hero { position:relative; z-index:1; min-height:100vh; display:grid; grid-template-columns:1fr 1fr; align-items:center; padding:120px 6% 80px; gap:60px; }
+    .hero-eyebrow { display:flex; align-items:center; gap:14px; margin-bottom:32px; opacity:0; transform:translateY(20px); }
+    .eyebrow-line { width:40px; height:1px; background:var(--gold); }
+    .eyebrow-text { font-size:.72rem; letter-spacing:3px; text-transform:uppercase; color:var(--gold); }
+    .hero-title { font-family:'Playfair Display',serif; font-size:clamp(2.8rem,5vw,5rem); font-weight:700; line-height:1.1; color:var(--cream); margin-bottom:28px; opacity:0; transform:translateY(30px); }
+    .hero-title em { font-style:italic; color:var(--gold2); }
+    .hero-desc { font-size:1rem; color:var(--muted); line-height:1.8; max-width:460px; margin-bottom:44px; opacity:0; transform:translateY(20px); }
+    .hero-btns { display:flex; gap:16px; flex-wrap:wrap; opacity:0; transform:translateY(20px); }
+    .btn-gold { padding:14px 36px; background:linear-gradient(135deg,var(--gold),var(--gold2)); color:var(--dark); font-weight:600; font-size:.85rem; letter-spacing:1.5px; text-transform:uppercase; text-decoration:none; cursor:none; box-shadow:0 0 40px rgba(184,149,63,.3); transition:transform .2s,box-shadow .2s; }
+    .btn-gold:hover { transform:translateY(-3px); box-shadow:0 8px 50px rgba(184,149,63,.5); }
+    .btn-outline { padding:14px 36px; background:transparent; color:var(--text); border:1px solid rgba(255,255,255,.15); font-size:.85rem; letter-spacing:1px; text-decoration:none; cursor:none; transition:border-color .2s,color .2s; }
+    .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+
+    .hero-right { display:flex; align-items:center; justify-content:center; opacity:0; }
+    .hero-emblem { width:300px; height:300px; border:1px solid var(--border); border-radius:50%; display:flex; align-items:center; justify-content:center; position:relative; animation:rotateBorder 14s linear infinite; }
+    .hero-emblem::before,.hero-emblem::after { content:''; position:absolute; border-radius:50%; border:1px solid rgba(184,149,63,.1); }
+    .hero-emblem::before { inset:-22px; animation:rotateBorder 20s linear infinite reverse; }
+    .hero-emblem::after  { inset:-44px; animation:rotateBorder 28s linear infinite; }
+    @keyframes rotateBorder { to { transform:rotate(360deg); } }
+    .emblem-inner { display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center; }
+    .emblem-icon { font-size:4rem; filter:drop-shadow(0 0 24px rgba(184,149,63,.7)); }
+    .emblem-text { font-family:'Playfair Display',serif; font-size:1rem; color:var(--gold2); letter-spacing:3px; text-transform:uppercase; }
+    .emblem-year { font-size:.72rem; color:var(--muted); letter-spacing:2px; }
+
+    /* MARQUEE */
+    .marquee-wrap { position:relative; z-index:1; overflow:hidden; border-top:1px solid var(--border); border-bottom:1px solid var(--border); background:var(--dark2); padding:18px 0; }
+    .marquee-track { display:flex; gap:60px; white-space:nowrap; animation:marquee 22s linear infinite; }
+    .marquee-item { display:flex; align-items:center; gap:14px; font-size:.72rem; letter-spacing:3px; text-transform:uppercase; color:var(--muted); flex-shrink:0; }
+    .mq-dot { width:4px; height:4px; border-radius:50%; background:var(--gold); flex-shrink:0; }
+    @keyframes marquee { to { transform:translateX(-50%); } }
+
+    /* SECTIONS */
+    section { position:relative; z-index:1; padding:100px 6%; }
+    .section-label { display:flex; align-items:center; gap:14px; margin-bottom:24px; }
+    .sl-line { width:32px; height:1px; background:var(--gold); }
+    .sl-text { font-size:.7rem; letter-spacing:3px; text-transform:uppercase; color:var(--gold); }
+    .section-title { font-family:'Playfair Display',serif; font-size:clamp(2rem,4vw,3.2rem); font-weight:700; color:var(--cream); line-height:1.2; margin-bottom:20px; }
+    .section-title em { font-style:italic; color:var(--gold2); }
+    .section-desc { color:var(--muted); line-height:1.8; font-size:.95rem; max-width:500px; }
+    .dg { width:48px; height:1px; background:linear-gradient(90deg,var(--gold),transparent); margin:24px 0 56px; }
+
+    /* AREAS */
+    #areas { background:var(--dark2); }
+    .areas-layout { display:grid; grid-template-columns:1fr 2fr; gap:80px; align-items:start; }
+    .areas-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .area-card { background:var(--glass); border:1px solid var(--border); padding:32px 24px; position:relative; overflow:hidden; transition:border-color .3s,transform .3s,box-shadow .3s; cursor:none; }
+    .area-card::after { content:''; position:absolute; bottom:0; left:0; width:0; height:1px; background:var(--gold); transition:width .4s; }
+    .area-card:hover { border-color:rgba(184,149,63,.5); transform:translateY(-4px); box-shadow:0 20px 50px rgba(0,0,0,.4); }
+    .area-card:hover::after { width:100%; }
+    .area-num { font-family:'Playfair Display',serif; font-size:2.5rem; font-weight:700; color:rgba(184,149,63,.15); line-height:1; margin-bottom:16px; }
+    .area-title { font-size:.9rem; font-weight:600; color:var(--cream); margin-bottom:10px; }
+    .area-desc { font-size:.8rem; color:var(--muted); line-height:1.6; }
+
+    /* DIFERENCIAIS */
+    #diferenciais { background:var(--dark); }
+    .diff-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); border:1px solid var(--border); }
+    .diff-item { background:var(--dark); padding:48px 36px; transition:background .3s; }
+    .diff-item:hover { background:var(--dark3); }
+    .diff-icon { font-size:2rem; margin-bottom:24px; }
+    .diff-title { font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:600; color:var(--cream); margin-bottom:14px; }
+    .diff-desc { font-size:.85rem; color:var(--muted); line-height:1.7; }
+
+    /* DEPOIMENTOS */
+    #depoimentos { background:var(--dark2); }
+    .test-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+    .testimonial { border:1px solid var(--border); padding:36px 28px; background:var(--glass); transition:border-color .3s,transform .3s; cursor:none; }
+    .testimonial:hover { border-color:var(--gold); transform:translateY(-4px); }
+    .t-quote { font-family:'Playfair Display',serif; font-size:3rem; color:var(--gold); line-height:.8; margin-bottom:16px; opacity:.6; }
+    .t-text { font-size:.88rem; color:var(--muted); line-height:1.7; margin-bottom:24px; font-style:italic; }
+    .t-author { display:flex; align-items:center; gap:14px; }
+    .t-avatar { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--gold),var(--gold2)); display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-weight:700; color:var(--dark); font-size:.9rem; flex-shrink:0; }
+    .t-name { font-size:.85rem; font-weight:600; color:var(--cream); }
+    .t-case { font-size:.75rem; color:var(--gold); }
+    .stars { color:var(--gold); font-size:.75rem; margin-bottom:16px; letter-spacing:2px; }
+
+    /* PROCESSO */
+    #processo { background:var(--dark); }
+    .proc-steps { display:grid; grid-template-columns:repeat(4,1fr); gap:0; position:relative; }
+    .proc-steps::before { content:''; position:absolute; top:28px; left:12.5%; right:12.5%; height:1px; background:linear-gradient(90deg,transparent,var(--gold),transparent); }
+    .proc-step { padding:0 20px; text-align:center; }
+    .proc-num { width:56px; height:56px; border-radius:50%; border:1px solid var(--gold); display:flex; align-items:center; justify-content:center; margin:0 auto 28px; font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:700; color:var(--gold); background:var(--dark); position:relative; z-index:1; }
+    .proc-title { font-size:.9rem; font-weight:600; color:var(--cream); margin-bottom:12px; }
+    .proc-desc { font-size:.8rem; color:var(--muted); line-height:1.6; }
+
+    /* CONTATO */
+    #contato { background:var(--navy); }
+    .contato-layout { display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:start; }
+    .contact-info { display:flex; flex-direction:column; gap:28px; margin-top:16px; }
+    .contact-item { display:flex; gap:18px; align-items:flex-start; }
+    .c-icon { width:44px; height:44px; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; color:var(--gold); }
+    .c-label { font-size:.7rem; letter-spacing:2px; text-transform:uppercase; color:var(--gold); margin-bottom:4px; }
+    .c-value { font-size:.9rem; color:var(--cream); line-height:1.5; }
+    .contact-form { display:flex; flex-direction:column; gap:16px; }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .form-field { display:flex; flex-direction:column; gap:6px; }
+    .form-field label { font-size:.7rem; letter-spacing:2px; text-transform:uppercase; color:var(--gold); }
+    .form-field input,.form-field textarea,.form-field select { background:rgba(255,255,255,.03); border:1px solid var(--border); color:var(--text); padding:12px 16px; font-family:'Inter',sans-serif; font-size:.88rem; outline:none; transition:border-color .2s; }
+    .form-field input:focus,.form-field textarea:focus,.form-field select:focus { border-color:var(--gold); }
+    .form-field input::placeholder,.form-field textarea::placeholder { color:var(--muted); }
+    .form-field textarea { resize:vertical; min-height:100px; }
+    .form-field select option { background:var(--dark2); }
+    .btn-submit { padding:14px 36px; align-self:flex-start; background:linear-gradient(135deg,var(--gold),var(--gold2)); color:var(--dark); font-weight:600; font-size:.82rem; letter-spacing:2px; text-transform:uppercase; border:none; cursor:none; box-shadow:0 0 30px rgba(184,149,63,.25); transition:transform .2s,box-shadow .2s; }
+    .btn-submit:hover { transform:translateY(-2px); box-shadow:0 8px 40px rgba(184,149,63,.4); }
+
+    /* FOOTER */
+    footer { position:relative; z-index:1; background:var(--dark); padding:60px 6% 28px; border-top:1px solid var(--border); }
+    .footer-top { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:48px; margin-bottom:48px; }
+    .fb-name { font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:700; color:var(--cream); margin-bottom:4px; }
+    .fb-oab { font-size:.68rem; letter-spacing:2px; color:var(--gold); margin-bottom:16px; }
+    .fb-desc { font-size:.84rem; color:var(--muted); line-height:1.7; max-width:240px; }
+    .footer-col h5 { font-size:.68rem; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:20px; }
+    .footer-list { list-style:none; display:flex; flex-direction:column; gap:10px; }
+    .footer-list a { font-size:.84rem; color:var(--muted); text-decoration:none; transition:color .2s; }
+    .footer-list a:hover { color:var(--gold2); }
+    .footer-bottom { border-top:1px solid var(--border); padding-top:24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+    .footer-copy { font-size:.78rem; color:var(--muted); }
+    .footer-social { display:flex; gap:10px; }
+    .social-link { width:36px; height:36px; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--muted); text-decoration:none; transition:all .2s; cursor:none; }
+    .social-link:hover { border-color:var(--gold); color:var(--gold); }
+
+    /* WHATSAPP */
+    .wa-float { position:fixed; bottom:30px; right:30px; z-index:200; width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#25D366,#128C7E); display:flex; align-items:center; justify-content:center; box-shadow:0 6px 28px rgba(37,211,102,.4); text-decoration:none; cursor:none; animation:waFloat 3s ease-in-out infinite; }
+    .wa-float:hover { animation:none; transform:scale(1.1); }
+    .wa-float svg { width:26px; height:26px; fill:white; }
+    .wa-pulse { position:absolute; inset:-6px; border-radius:50%; border:2px solid rgba(37,211,102,.35); animation:waPulse 2.2s ease-out infinite; }
+    @keyframes waFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+    @keyframes waPulse  { 0%{transform:scale(1);opacity:1} 100%{transform:scale(1.65);opacity:0} }
+
+    .reveal { opacity:0; transform:translateY(28px); }
+    .reveal.active { opacity:1; transform:none; transition:opacity .7s ease,transform .7s ease; }
+
+    @media (max-width:900px) {
+      #hero { grid-template-columns:1fr; }
+      .hero-right { display:none; }
+      .areas-layout { grid-template-columns:1fr; gap:40px; }
+      .areas-grid { grid-template-columns:1fr; }
+      .diff-grid { grid-template-columns:1fr; }
+      .test-grid { grid-template-columns:1fr; }
+      .proc-steps { grid-template-columns:1fr 1fr; gap:40px; }
+      .proc-steps::before { display:none; }
+      .contato-layout { grid-template-columns:1fr; }
+      .footer-top { grid-template-columns:1fr 1fr; }
+      .nav-links { display:none; }
+      body { cursor:auto; }
+      .cursor,.cursor-ring { display:none; }
+    }
+    @media (max-width:480px) {
+      .form-row { grid-template-columns:1fr; }
+      .proc-steps { grid-template-columns:1fr; }
+      .footer-top { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- WhatsApp flutuante -->
+  <a class="wa-float" href="https://wa.me/5511999999999" target="_blank" rel="noopener" title="Consulta pelo WhatsApp">
+    <div class="wa-pulse"></div>
+    <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12 0C5.373 0 0 5.373 0 12c0 2.125.553 4.122 1.523 5.855L.057 24l6.304-1.654A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.371l-.358-.213-3.742.981.998-3.648-.234-.374A9.778 9.778 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+  </a>
+
+  <!-- NAVBAR -->
+  <nav id="navbar">
+    <a class="nav-logo" href="#hero">
+      <span class="nav-logo-name">Ferreira &amp; Associados</span>
+      <span class="nav-logo-sub">Advocacia &amp; Consultoria</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#areas">Atuação</a></li>
+      <li><a href="#diferenciais">Diferenciais</a></li>
+      <li><a href="#depoimentos">Clientes</a></li>
+      <li><a href="#contato">Contato</a></li>
+    </ul>
+    <a class="nav-cta" href="#contato">Consulta Gratuita</a>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-left">
+      <div class="hero-eyebrow">
+        <div class="eyebrow-line"></div>
+        <span class="eyebrow-text">OAB/SP 123.456 — Desde 2008</span>
+      </div>
+      <h1 class="hero-title">
+        Defendendo<br>seus <em>direitos</em><br>com excelência.
+      </h1>
+      <p class="hero-desc">
+        Mais de 15 anos de atuação em direito civil, trabalhista e empresarial. Soluções jurídicas estratégicas, personalizadas e com resultados comprovados.
+      </p>
+      <div class="hero-btns">
+        <a class="btn-gold" href="#contato">Consulta Gratuita</a>
+        <a class="btn-outline" href="#areas">Áreas de Atuação</a>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-emblem">
+        <div class="emblem-inner">
+          <div class="emblem-icon">⚖️</div>
+          <div class="emblem-text">Ferreira</div>
+          <div class="emblem-year">Est. 2008</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee-wrap">
+    <div class="marquee-track">
+      <span class="marquee-item"><span class="mq-dot"></span>Direito Civil</span>
+      <span class="marquee-item"><span class="mq-dot"></span>Direito do Trabalho</span>
+      <span class="marquee-item"><span class="mq-dot"></span>Direito Empresarial</span>
+      <span class="marquee-item"><span class="mq-dot"></span>Direito de Família</span>
+      <span class="marquee-item"><span class="mq-dot"></span>Direito Imobiliário</span>
+      <span class="marquee-item"><span class="mq-dot"></span>Direito Previdenciário</span>
+      <span class="marquee-item"><span class="mq-dot"></span>Contratos</span>
+      <span class="marquee-item"><span class="mq-dot"></span>Recuperação Judicial</span>
+      <span class="marquee-item"><span class="mq-dot"></span>Direito Civil</span>
+      <span class="marquee-item"><span class="mq-dot"></span>Direito do Trabalho</span>
+      <span class="marquee-item"><span class="mq-dot"></span>Direito Empresarial</span>
+      <span class="marquee-item"><span class="mq-dot"></span>Direito de Família</span>
+      <span class="marquee-item"><span class="mq-dot"></span>Direito Imobiliário</span>
+      <span class="marquee-item"><span class="mq-dot"></span>Direito Previdenciário</span>
+      <span class="marquee-item"><span class="mq-dot"></span>Contratos</span>
+      <span class="marquee-item"><span class="mq-dot"></span>Recuperação Judicial</span>
+    </div>
+  </div>
+
+  <!-- ÁREAS -->
+  <section id="areas">
+    <div class="areas-layout">
+      <div>
+        <div class="section-label reveal"><div class="sl-line"></div><span class="sl-text">Expertise</span></div>
+        <h2 class="section-title reveal">Áreas de<br><em>Atuação</em></h2>
+        <div class="dg"></div>
+        <p class="section-desc reveal">Atuamos com precisão e profundidade em diversas frentes do direito, sempre com foco no resultado do cliente.</p>
+      </div>
+      <div class="areas-grid">
+        <div class="area-card reveal"><div class="area-num">01</div><div class="area-title">Direito Civil</div><div class="area-desc">Contratos, responsabilidade civil, cobranças, indenizações e litígios entre particulares.</div></div>
+        <div class="area-card reveal"><div class="area-num">02</div><div class="area-title">Direito Trabalhista</div><div class="area-desc">Defesa de trabalhadores e empresas em ações trabalhistas, rescisões e acordos coletivos.</div></div>
+        <div class="area-card reveal"><div class="area-num">03</div><div class="area-title">Direito Empresarial</div><div class="area-desc">Constituição de empresas, contratos, fusões, aquisições e recuperação judicial.</div></div>
+        <div class="area-card reveal"><div class="area-num">04</div><div class="area-title">Direito de Família</div><div class="area-desc">Divórcio, guarda, pensão alimentícia, inventário e planejamento patrimonial.</div></div>
+        <div class="area-card reveal"><div class="area-num">05</div><div class="area-title">Direito Imobiliário</div><div class="area-desc">Compra e venda, locações, usucapião, regularização e contratos de construção.</div></div>
+        <div class="area-card reveal"><div class="area-num">06</div><div class="area-title">Direito Previdenciário</div><div class="area-desc">Aposentadoria, benefícios do INSS, revisões e ações contra o INSS.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DIFERENCIAIS -->
+  <section id="diferenciais">
+    <div style="text-align:center;max-width:600px;margin:0 auto 60px">
+      <div class="section-label reveal" style="justify-content:center"><div class="sl-line"></div><span class="sl-text">Por que nos escolher</span><div class="sl-line"></div></div>
+      <h2 class="section-title reveal">Nossos <em>Diferenciais</em></h2>
+    </div>
+    <div class="diff-grid">
+      <div class="diff-item reveal"><div class="diff-icon">🎯</div><div class="diff-title">Estratégia Personalizada</div><div class="diff-desc">Cada caso é único. Desenvolvemos estratégias jurídicas sob medida para maximizar as chances de sucesso do seu processo.</div></div>
+      <div class="diff-item reveal"><div class="diff-icon">🔒</div><div class="diff-title">Sigilo Absoluto</div><div class="diff-desc">Total confidencialidade em todas as etapas. Sua privacidade é nossa prioridade e compromisso ético fundamental.</div></div>
+      <div class="diff-item reveal"><div class="diff-icon">📊</div><div class="diff-title">Transparência Total</div><div class="diff-desc">Informamos o andamento do seu processo em tempo real. Você sempre sabe exatamente o que está acontecendo.</div></div>
+      <div class="diff-item reveal"><div class="diff-icon">⚡</div><div class="diff-title">Agilidade Processual</div><div class="diff-desc">Prazos cumpridos rigorosamente. Utilizamos tecnologia para acelerar cada etapa do seu caso.</div></div>
+      <div class="diff-item reveal"><div class="diff-icon">🏆</div><div class="diff-title">+1.200 Casos Ganhos</div><div class="diff-desc">Histórico comprovado de vitórias nas mais variadas áreas do direito em tribunais de todo o país.</div></div>
+      <div class="diff-item reveal"><div class="diff-icon">🤝</div><div class="diff-title">Atendimento Humanizado</div><div class="diff-desc">Mais do que advogados, somos parceiros. Ouvimos, entendemos e lutamos junto com você em cada momento.</div></div>
+    </div>
+  </section>
+
+  <!-- DEPOIMENTOS -->
+  <section id="depoimentos">
+    <div style="text-align:center;max-width:600px;margin:0 auto 60px">
+      <div class="section-label reveal" style="justify-content:center"><div class="sl-line"></div><span class="sl-text">Clientes</span><div class="sl-line"></div></div>
+      <h2 class="section-title reveal">O que dizem nossos <em>clientes</em></h2>
+    </div>
+    <div class="test-grid">
+      <div class="testimonial reveal">
+        <div class="stars">★★★★★</div>
+        <div class="t-quote">"</div>
+        <p class="t-text">Ganhei minha causa trabalhista após 2 anos de luta. O Dr. Ferreira foi incansável, sempre me mantendo informada e confiante. Recomendo de olhos fechados.</p>
+        <div class="t-author"><div class="t-avatar">MC</div><div><div class="t-name">Maria C.</div><div class="t-case">Direito Trabalhista</div></div></div>
+      </div>
+      <div class="testimonial reveal">
+        <div class="stars">★★★★★</div>
+        <div class="t-quote">"</div>
+        <p class="t-text">A assessoria jurídica para minha empresa foi fundamental. Contratos, sociedade e proteção patrimonial — tudo resolvido com excelência e agilidade impressionantes.</p>
+        <div class="t-author"><div class="t-avatar">RS</div><div><div class="t-name">Roberto S.</div><div class="t-case">Direito Empresarial</div></div></div>
+      </div>
+      <div class="testimonial reveal">
+        <div class="stars">★★★★★</div>
+        <div class="t-quote">"</div>
+        <p class="t-text">Processo de divórcio conduzido com muita sensibilidade e profissionalismo. A guarda dos meus filhos foi garantida. Eternamente grata pela dedicação.</p>
+        <div class="t-author"><div class="t-avatar">AP</div><div><div class="t-name">Ana P.</div><div class="t-case">Direito de Família</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESSO -->
+  <section id="processo">
+    <div style="text-align:center;max-width:600px;margin:0 auto 70px">
+      <div class="section-label reveal" style="justify-content:center"><div class="sl-line"></div><span class="sl-text">Como trabalhamos</span><div class="sl-line"></div></div>
+      <h2 class="section-title reveal">Nosso <em>Processo</em></h2>
+    </div>
+    <div class="proc-steps">
+      <div class="proc-step reveal"><div class="proc-num">01</div><div class="proc-title">Consulta Inicial</div><div class="proc-desc">Análise gratuita do seu caso para entender o contexto e as possibilidades jurídicas.</div></div>
+      <div class="proc-step reveal"><div class="proc-num">02</div><div class="proc-title">Diagnóstico</div><div class="proc-desc">Estudo aprofundado da situação jurídica e elaboração de estratégia personalizada.</div></div>
+      <div class="proc-step reveal"><div class="proc-num">03</div><div class="proc-title">Execução</div><div class="proc-desc">Atuação técnica e precisa, com acompanhamento detalhado de cada etapa processual.</div></div>
+      <div class="proc-step reveal"><div class="proc-num">04</div><div class="proc-title">Resultado</div><div class="proc-desc">Busca incansável pela melhor solução jurídica para você ou sua empresa.</div></div>
+    </div>
+  </section>
+
+  <!-- CONTATO -->
+  <section id="contato">
+    <div class="contato-layout">
+      <div>
+        <div class="section-label reveal"><div class="sl-line"></div><span class="sl-text">Fale Conosco</span></div>
+        <h2 class="section-title reveal">Agende sua<br><em>Consulta</em></h2>
+        <div class="dg"></div>
+        <p class="section-desc reveal" style="margin-bottom:40px">A primeira consulta é gratuita. Entre em contato e descubra como podemos ajudá-lo.</p>
+        <div class="contact-info">
+          <div class="contact-item reveal"><div class="c-icon">📍</div><div><div class="c-label">Endereço</div><div class="c-value">Av. Paulista, 1000, cj. 501<br>Bela Vista — São Paulo, SP</div></div></div>
+          <div class="contact-item reveal"><div class="c-icon">📞</div><div><div class="c-label">Telefone / WhatsApp</div><div class="c-value">(11) 99999-9999</div></div></div>
+          <div class="contact-item reveal"><div class="c-icon">📧</div><div><div class="c-label">E-mail</div><div class="c-value">contato@ferreiraadvocacia.com.br</div></div></div>
+          <div class="contact-item reveal"><div class="c-icon">🕐</div><div><div class="c-label">Atendimento</div><div class="c-value">Seg–Sex: 9h–18h</div></div></div>
+        </div>
+      </div>
+      <div class="reveal">
+        <form class="contact-form" id="contactForm">
+          <div class="form-row">
+            <div class="form-field"><label>Nome</label><input type="text" id="fName" placeholder="Seu nome completo" /></div>
+            <div class="form-field"><label>Telefone</label><input type="tel" placeholder="(11) 00000-0000" /></div>
+          </div>
+          <div class="form-field"><label>E-mail</label><input type="email" placeholder="seu@email.com" /></div>
+          <div class="form-field">
+            <label>Área de Interesse</label>
+            <select>
+              <option value="">Selecione a área</option>
+              <option>Direito Civil</option><option>Direito Trabalhista</option>
+              <option>Direito Empresarial</option><option>Direito de Família</option>
+              <option>Direito Imobiliário</option><option>Direito Previdenciário</option>
+              <option>Outro</option>
+            </select>
+          </div>
+          <div class="form-field"><label>Descreva seu caso</label><textarea placeholder="Conte-nos brevemente sobre sua situação jurídica..."></textarea></div>
+          <button class="btn-submit" type="button" id="submitBtn">Enviar Mensagem →</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-top">
+      <div>
+        <div class="fb-name">Ferreira &amp; Associados</div>
+        <div class="fb-oab">OAB/SP 123.456 — Advocacia &amp; Consultoria</div>
+        <p class="fb-desc">Excelência jurídica a serviço dos seus direitos. Atendendo São Paulo e todo o Brasil desde 2008.</p>
+      </div>
+      <div class="footer-col"><h5>Atuação</h5><ul class="footer-list"><li><a href="#areas">Direito Civil</a></li><li><a href="#areas">Direito Trabalhista</a></li><li><a href="#areas">Direito Empresarial</a></li><li><a href="#areas">Direito de Família</a></li></ul></div>
+      <div class="footer-col"><h5>Escritório</h5><ul class="footer-list"><li><a href="#diferenciais">Diferenciais</a></li><li><a href="#depoimentos">Clientes</a></li><li><a href="#processo">Processo</a></li><li><a href="#contato">Contato</a></li></ul></div>
+      <div class="footer-col"><h5>Contato</h5><ul class="footer-list"><li><a href="tel:+5511999999999">(11) 99999-9999</a></li><li><a href="https://wa.me/5511999999999" target="_blank">WhatsApp</a></li><li><a href="mailto:contato@ferreiraadvocacia.com.br">E-mail</a></li><li><a href="#">Instagram</a></li></ul></div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2024 Ferreira &amp; Associados. Todos os direitos reservados. OAB/SP 123.456</p>
+      <div class="footer-social">
+        <a class="social-link" href="#" title="Instagram"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></a>
+        <a class="social-link" href="https://wa.me/5511999999999" target="_blank" title="WhatsApp"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12 0C5.373 0 0 5.373 0 12c0 2.125.553 4.122 1.523 5.855L.057 24l6.304-1.654A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.371l-.358-.213-3.742.981.998-3.648-.234-.374A9.778 9.778 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg></a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+  /* ─── THREE.JS ─── */
+  (function(){
+    const canvas=document.getElementById('bg-canvas');
+    const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
+    renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+    renderer.setSize(innerWidth,innerHeight);
+    const scene=new THREE.Scene();
+    const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,0.1,1000);
+    camera.position.z=55;
+
+    /* partículas */
+    const N=1500, p=new Float32Array(N*3), c=new Float32Array(N*3);
+    const gold=new THREE.Color('#B8953F'), dark=new THREE.Color('#0D1220');
+    for(let i=0;i<N;i++){
+      p[i*3]=(Math.random()-.5)*180; p[i*3+1]=(Math.random()-.5)*180; p[i*3+2]=(Math.random()-.5)*180;
+      const col=dark.clone().lerp(gold,Math.random()*.35);
+      c[i*3]=col.r; c[i*3+1]=col.g; c[i*3+2]=col.b;
+    }
+    const pGeo=new THREE.BufferGeometry();
+    pGeo.setAttribute('position',new THREE.BufferAttribute(p,3));
+    pGeo.setAttribute('color',new THREE.BufferAttribute(c,3));
+    const pts=new THREE.Points(pGeo,new THREE.PointsMaterial({size:.45,vertexColors:true,transparent:true,opacity:.8}));
+    scene.add(pts);
+
+    /* toroide */
+    const t1=new THREE.Mesh(new THREE.TorusGeometry(18,.3,8,60),new THREE.MeshBasicMaterial({color:0xB8953F,transparent:true,opacity:.07,wireframe:true}));
+    t1.rotation.x=Math.PI/4; scene.add(t1);
+    const t2=new THREE.Mesh(new THREE.TorusGeometry(26,.2,8,80),new THREE.MeshBasicMaterial({color:0xB8953F,transparent:true,opacity:.04,wireframe:true}));
+    t2.rotation.y=Math.PI/3; scene.add(t2);
+
+    let mx=0,my=0;
+    document.addEventListener('mousemove',e=>{mx=(e.clientX/innerWidth-.5)*.25;my=(e.clientY/innerHeight-.5)*.25;});
+    window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+
+    let t=0;
+    (function a(){requestAnimationFrame(a);t+=.001;
+      pts.rotation.y=t*.5+mx; pts.rotation.x=t*.2+my;
+      t1.rotation.z+=.002; t2.rotation.x+=.001;
+      renderer.render(scene,camera);
+    })();
+  })();
+
+  /* ─── CURSOR ─── */
+  const cur=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
+  let rx=0,ry=0;
+  document.addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});
+  document.querySelectorAll('a,button,.area-card,.testimonial').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{cur.style.transform='translate(-50%,-50%) scale(2.5)';ring.style.transform='translate(-50%,-50%) scale(1.4)';});
+    el.addEventListener('mouseleave',()=>{cur.style.transform='translate(-50%,-50%) scale(1)';ring.style.transform='translate(-50%,-50%) scale(1)';});
+  });
+  (function loop(){ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(loop);})();
+  document.addEventListener('mousemove',e=>{rx+=(e.clientX-rx)*.1;ry+=(e.clientY-ry)*.1;});
+
+  /* ─── NAVBAR ─── */
+  window.addEventListener('scroll',()=>document.getElementById('navbar').classList.toggle('scrolled',scrollY>30));
+
+  /* ─── GSAP ─── */
+  gsap.registerPlugin(ScrollTrigger);
+  gsap.timeline({delay:.4})
+    .to('.hero-eyebrow',{opacity:1,y:0,duration:.8,ease:'power3.out'})
+    .to('.hero-title',  {opacity:1,y:0,duration:1,ease:'power3.out'},'-=.5')
+    .to('.hero-desc',   {opacity:1,y:0,duration:.8,ease:'power3.out'},'-=.6')
+    .to('.hero-btns',   {opacity:1,y:0,duration:.8,ease:'power3.out'},'-=.5')
+    .to('.hero-right',  {opacity:1,duration:1.2,ease:'power2.out'},'-=.8');
+
+  /* ─── SCROLL REVEAL ─── */
+  const io=new IntersectionObserver(entries=>{
+    entries.forEach((e,i)=>{if(e.isIntersecting){setTimeout(()=>e.target.classList.add('active'),i*90);io.unobserve(e.target);}});
+  },{threshold:.1});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  /* ─── FORM ─── */
+  document.getElementById('submitBtn').addEventListener('click',()=>{
+    const name=document.getElementById('fName').value;
+    if(!name.trim()){alert('Por favor, preencha seu nome.');return;}
+    window.open('https://wa.me/5511999999999?text='+encodeURIComponent('Olá! Meu nome é '+name+' e gostaria de agendar uma consulta jurídica.'),'_blank');
+  });
+  </script>
+</body>
+</html>
